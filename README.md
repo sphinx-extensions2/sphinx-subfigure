@@ -1,5 +1,7 @@
 # sphinx-subfigure (IN-DEVELOPMENT)
 
+[![PyPI][pypi-badge]][pypi-link]
+
 A [sphinx](https://www.sphinx-doc.org) extension to create figures with multiple images:
 
 - Provides a simple format for complex image layouts.
@@ -46,3 +48,6 @@ Now add a `subfigure` directive to your document:
 4. "Empty" areas can be designated with `.`
 
 ![Responsive sub-figure](subfigure-responsive.gif)
+
+[pypi-badge]: https://img.shields.io/pypi/v/sphinx_subfigure.svg
+[pypi-link]: https://pypi.org/project/sphinx_subfigure
