@@ -1,0 +1,4 @@
+.sphinx-subfigure .outline .sphinx-subfigure-item,
+.sphinx-subfigure .outline .sphinx-subfigure-item img {
+    border: 1px solid grey;
+}
