@@ -1,4 +1,4 @@
-# sphinx-subfigure (IN-DEVELOPMENT)
+# sphinx-subfigure
 
 A [sphinx](https://www.sphinx-doc.org) extension to create figures with multiple images:
 

@@ -1,4 +1,4 @@
-# sphinx-subfigure (IN-DEVELOPMENT)
+# sphinx-subfigure
 
 [![PyPI][pypi-badge]][pypi-link]
 
