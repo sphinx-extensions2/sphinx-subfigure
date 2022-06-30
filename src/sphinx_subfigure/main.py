@@ -9,12 +9,14 @@ from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
 
 from .tr_html import setup_html
+from .tr_latex import setup_latex
 
 
 def setup(app: Sphinx) -> None:
     """Setup the extension."""
     app.add_directive("subfigure", SubfigureDirective)
     setup_html(app)
+    setup_latex(app)
 
 
 class SubfigureDirective(SphinxDirective):
@@ -27,6 +29,8 @@ class SubfigureDirective(SphinxDirective):
     option_spec = {
         "layout-sm": directives.unchanged,
         "layout-lg": directives.unchanged,
+        "layout-xl": directives.unchanged,
+        "layout-xxl": directives.unchanged,
         "subcaptions": lambda x: directives.choice(x, ("above", "below")),
         "width": directives.length_or_percentage_or_unitless,
         "align": lambda x: directives.choice(x, ("left", "center", "right")),
@@ -75,14 +79,12 @@ class SubfigureDirective(SphinxDirective):
         figure_node["layout"]["default"] = self.generate_layout(
             layout_string, number_of_images
         )
-        if "layout-sm" in self.options:
-            figure_node["layout"]["sm"] = self.generate_layout(
-                self.options.get("layout-sm") or 1, number_of_images, "layout-sm"
-            )
-        if "layout-lg" in self.options:
-            figure_node["layout"]["lg"] = self.generate_layout(
-                self.options.get("layout-lg") or 1, number_of_images, "layout-lg"
-            )
+        for size in ("sm", "lg", "xl", "xxl"):
+            layout_opt = f"layout-{size}"
+            if self.options.get(layout_opt):
+                figure_node["layout"][size] = self.generate_layout(
+                    self.options.get(layout_opt), number_of_images, ltype=layout_opt
+                )
 
         return [figure_node]
 
