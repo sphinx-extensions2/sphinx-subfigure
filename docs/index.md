@@ -82,6 +82,56 @@ The figure can now be referenced in the document:
 
 ## More Examples
 
+:::{subfigure} AA|BC
+:subcaptions: above
+:class-grid: outline
+
+```{image} _static/A.png
+:height: 100px
+:alt: Image A
+```
+
+```{image} _static/B.png
+:height: 100px
+:alt: Image B
+```
+
+```{image} _static/C.png
+:height: 100px
+:alt: Image C
+```
+
+Image spanning multiple columns: `AA|BC`
+
+:::
+
+---
+
+:::{subfigure} AB|AC
+:subcaptions: above
+:class-grid: outline
+
+```{image} _static/A.png
+:height: 100px
+:alt: Image A
+```
+
+```{image} _static/B.png
+:height: 100px
+:alt: Image B
+```
+
+```{image} _static/C.png
+:height: 100px
+:alt: Image C
+```
+
+Image spanning multiple rows: `AB|AC`
+
+:::
+
+---
+
 :::{subfigure} A.B|CDE
 :subcaptions: above
 :class-grid: outline
@@ -199,6 +249,6 @@ Sub-figure with no captions
 :alt: Figure E
 ```
 
-Adaptive layouts
+Sub-figure with adaptive layouts
 
 :::
