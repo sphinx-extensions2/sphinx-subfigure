@@ -8,9 +8,9 @@ simple
    .. image:: image.png
       :alt: hallo
 .
-<document source="<src>/index.rst">
-    <figure classes="sphinx-subfigure" grid_classes="" is_subfigure="True" item_classes="" layout="['A',\ 'B']" subcaptions="True">
-        <SubfigureGridHtml layout="['A',\ 'B']">
+<document source="<src>/index.rst" subfig_layouts="{'default': {'ss-layout-default-AB': [['A', 'B']]}}">
+    <figure classes="sphinx-subfigure" grid_classes="" is_subfigure="True" item_classes="" layout="{'default': [['A', 'B']]}" subcaptions="True">
+        <SubfigureGridHtml classes="sphinx-subfigure-grid ss-layout-default-AB">
             <SubfigureGridItemHtml area="A" classes="sphinx-subfigure-item">
                 <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="A" uri="image.png">
             <SubfigureGridItemHtml area="B" classes="sphinx-subfigure-item">
