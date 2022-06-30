@@ -1,6 +1,8 @@
 import base64
 from pathlib import Path
+import re
 
+from bs4 import BeautifulSoup
 import pytest
 from sphinx_pytest.plugin import CreateDoctree
 
@@ -20,3 +22,63 @@ def test_posttransform_html(file_params, sphinx_doctree: CreateDoctree):
     result = sphinx_doctree(file_params.content)
     assert not result.warnings
     file_params.assert_expected(result.get_resolved_pformat(), rstrip_lines=True)
+
+
+@pytest.mark.param_file(FIXTURE_PATH / "build_html.txt")
+def test_build_html(file_params, sphinx_doctree: CreateDoctree):
+    """Test HTML build output."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(file_params.content)
+    assert not result.warnings
+    html = BeautifulSoup(
+        Path(result.builder.outdir).joinpath("index.html").read_text(), "html.parser"
+    )
+    fig_html = str(html.select_one("figure.sphinx-subfigure"))
+    file_params.assert_expected(fig_html, rstrip_lines=True)
+
+
+@pytest.mark.param_file(FIXTURE_PATH / "posttransform_latex.txt")
+def test_posttransform_latex(file_params, sphinx_doctree: CreateDoctree):
+    """Test AST output after post-transforms, when using the LaTeX builder."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "latex"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(file_params.content)
+    assert not result.warnings
+    file_params.assert_expected(result.get_resolved_pformat(), rstrip_lines=True)
+
+
+@pytest.mark.param_file(FIXTURE_PATH / "build_latex.txt")
+def test_build_latex(file_params, sphinx_doctree: CreateDoctree):
+    """Test LaTeX build output."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "latex"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(file_params.content)
+    assert not result.warnings
+    tex = Path(result.builder.outdir).joinpath("python.tex").read_text()
+    fig_tex = re.findall(r"\\begin\{figure\}.*\\end\{figure\}", tex, re.DOTALL)[0]
+    file_params.assert_expected(fig_tex, rstrip_lines=True)
+
+
+@pytest.mark.param_file(FIXTURE_PATH / "posttransform_man.txt")
+def test_posttransform_man(file_params, sphinx_doctree: CreateDoctree):
+    """Test AST output after post-transforms, when using the Man builder."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "man"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(file_params.content)
+    assert not result.warnings
+    file_params.assert_expected(result.get_resolved_pformat(), rstrip_lines=True)
+
+
+@pytest.mark.param_file(FIXTURE_PATH / "build_html.txt")
+def test_build_man(file_params, sphinx_doctree: CreateDoctree):
+    """Test Man build."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "man"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(file_params.content)
+    assert not result.warnings

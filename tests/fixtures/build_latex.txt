@@ -1,0 +1,18 @@
+simple
+.
+.. subfigure:: AB
+
+   .. image:: image.png
+      :alt: hallo
+
+   .. image:: image.png
+      :alt: hallo
+.
+\begin{figure}[htbp]
+\centering
+
+\noindent\sphinxincludegraphics{{image}.png}
+
+\noindent\sphinxincludegraphics{{image}.png}
+\end{figure}
+.
