@@ -23,9 +23,11 @@ dependencies = ["sphinx"]
 [project."optional-dependencies"]
 testing = [
     "pytest",
+    "pytest-cov",
     "pytest-regressions",
     "pytest-param-files",
-    "sphinx-pytest>=0.0.4"
+    "sphinx-pytest>=0.0.4",
+    "beautifulsoup4",
 ]
 docs = [
     "myst-parser",

@@ -1,0 +1,21 @@
+simple
+.
+.. subfigure:: AB
+
+   .. image:: image.png
+      :alt: hallo
+
+   .. image:: image.png
+      :alt: hallo
+.
+<figure class="sphinx-subfigure align-default">
+<div class="" style="display: grid; grid-template-areas: 'A B';">
+<div class="sphinx-subfigure-item" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: A;">
+<img alt="hallo" src="_images/image.png"/>
+</div>
+<div class="sphinx-subfigure-item" style="display: flex; flex-direction: column; justify-content: center; align-items: center; grid-area: B;">
+<img alt="hallo" src="_images/image.png"/>
+</div>
+</div>
+</figure>
+.
