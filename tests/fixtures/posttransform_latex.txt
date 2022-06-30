@@ -10,6 +10,8 @@ simple
 .
 <document source="<src>/index.rst">
     <figure classes="sphinx-subfigure" grid_classes="" is_subfigure="True" item_classes="" layout="{'default': [['A', 'B']]}" subcaptions="True">
-        <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="A" uri="image.png">
-        <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="B" uri="image.png">
+        <SubfigureEnvLatex width="0.495">
+            <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="A" uri="image.png">
+        <SubfigureEnvLatex width="0.495">
+            <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="B" uri="image.png">
 .

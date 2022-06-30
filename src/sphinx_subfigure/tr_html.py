@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from html import escape
 from typing import Any
 
 from docutils import nodes
@@ -42,10 +43,14 @@ def html_page_context(
             style.append("@media (max-width: 576px) {")
         if size == "lg":
             style.append("@media (min-width: 992px) {")
+        if size == "xl":
+            style.append("@media (min-width: 1200px) {")
+        if size == "xxl":
+            style.append("@media (min-width: 1400px) {")
         for layout_class, layout in cls_layout.items():
             layout_grid = " ".join(["'" + " ".join(row) + "'" for row in layout])
             style.append(f"  .{layout_class} {{ grid-template-areas: {layout_grid}; }}")
-        if size in ["sm", "lg"]:
+        if size in ["sm", "lg", "xl", "xxl"]:
             style.append("}")
 
     if style:
@@ -82,7 +87,7 @@ def visit_subfigure_grid_item_html(
     style += f" grid-area: {node['area']};"
     self.body.append(f'<div class="{classes}" style="{style}">\n')
     if "caption" in node and node["caption-align"] == "above":
-        self.body.append(f'<span class="caption">{node["caption"]}</span>\n')
+        self.body.append(f'<span class="caption">{escape(node["caption"])}</span>\n')
 
 
 def depart_subfigure_grid_item_html(
@@ -90,7 +95,7 @@ def depart_subfigure_grid_item_html(
 ) -> None:
     """Depart subfigure grid item node."""
     if "caption" in node and node["caption-align"] == "below":
-        self.body.append(f'<span class="caption">{node["caption"]}</span>\n')
+        self.body.append(f'<span class="caption">{escape(node["caption"])}</span>\n')
     self.body.append("</div>\n")
 
 

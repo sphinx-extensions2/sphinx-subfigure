@@ -5,10 +5,11 @@
 A [sphinx](https://www.sphinx-doc.org) extension to create figures with multiple images:
 
 - Provides a simple format for complex image layouts.
-  - Supports responsive HTML layouts, for different screen sizes.
+- Supports HTML fully, with responsive layouts, for different screen sizes
+  - LaTeX is supported, except for images that span multiple rows.
+  - degrades gracefully for other formats.
 - Supports figure numbering and referencing.
 - Supports image sub-captions, via `alt` text.
-- Supports HTML fully (LaTeX to come), and degrades gracefully for other formats.
 
 ## Usage
 
@@ -46,6 +47,7 @@ Now add a `subfigure` directive to your document:
 2. Layouts are formed by composing the areas into a grid, with rows delimited by `|`.
 3. Each area must be used exactly once in the layout, and form a single rectangle.
 4. "Empty" areas can be designated with `.`
+5. Additional layouts can be defined with `:layout-sm:`, `:layout-lg:`, `:layout-xl:`, for different screen sizes (HTML only).
 
 ![Responsive sub-figure](subfigure-responsive.gif)
 
