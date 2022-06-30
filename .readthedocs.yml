@@ -11,3 +11,8 @@ python:
 sphinx:
   builder: html
   fail_on_warning: true
+
+# Also build PDF & ePub
+formats:
+  - epub
+  - pdf
