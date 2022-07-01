@@ -252,3 +252,17 @@ Sub-figure with no captions
 Sub-figure with adaptive layouts
 
 :::
+
+---
+
+:::{subfigure} 2
+:subcaptions: above
+:class-grid: outline
+
+![Figure A](_static/A.png)
+
+![Figure B](_static/B.png)
+
+Sub-figure using myst-parser syntax: `![alt](image.png)`
+
+:::
