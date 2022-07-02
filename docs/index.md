@@ -25,6 +25,7 @@ Now add a `subfigure` directive to your document:
 ```restructuredtext
 .. subfigure:: AA|BC
    :layout-sm: A|B|C
+   :gap: 8px
    :subcaptions: above
    :name: myfigure
    :class-grid: outline
@@ -49,6 +50,7 @@ Now add a `subfigure` directive to your document:
 
 :::{subfigure} AA|BC
 :layout-sm: A|B|C
+:gap: 8px
 :subcaptions: above
 :name: myfigure
 :class-grid: outline
@@ -79,6 +81,25 @@ The figure can now be referenced in the document:
 ```
 
 {ref}`myfigure`, {numref}`myfigure`
+
+## Options
+
+Options for `subfigure` directive:
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| `layout-sm` | string | Layout for small screens |
+| `layout-lg` | string | Layout for large screens |
+| `layout-xl` | string | Layout for extra large screens |
+| `layout-xxl` | string | Layout for extra extra large screens |
+| `gap` | length | Space between image areas |
+| `width` | length | Width of figure |
+| `align` | left\|center\|right | Alignment of figure |
+| `subcaptions` | above\|below | Position of image captions |
+| `name` | string | Label name of the figure |
+| `class` | space-delimited | CSS class(es) for the figure |
+| `class-grid` | space-delimited | CSS class(es) for the grid |
+| `class-area` | space-delimited | CSS class(es) for each area |
 
 ## More Examples
 

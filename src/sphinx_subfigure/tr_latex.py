@@ -97,7 +97,7 @@ class SubfigureLaTexTransform(SphinxPostTransform):
                     if flattened[subfigs][2]:
                         subcaption_node["new-row"] = True
                     subfigs += 1
-                    if fig_node["subcaptions"] and child.get("alt"):
+                    if fig_node.get("subcaptions") and child.get("alt"):
                         subcaption_node["caption-align"] = fig_node["subcaptions"]
                         subcaption_node["caption"] = child["alt"]
                     subcaption_node += child
