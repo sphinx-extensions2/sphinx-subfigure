@@ -34,10 +34,11 @@ class SubfigureDirective(SphinxDirective):
         "subcaptions": lambda x: directives.choice(x, ("above", "below")),
         "width": directives.length_or_percentage_or_unitless,
         "align": lambda x: directives.choice(x, ("left", "center", "right")),
+        "gap": directives.length_or_percentage_or_unitless,
         "name": directives.unchanged,
         "class": directives.class_option,
         "class-grid": directives.class_option,
-        "class-item": directives.class_option,
+        "class-area": directives.class_option,
     }
 
     def run(self) -> list[nodes.Element]:
@@ -47,14 +48,12 @@ class SubfigureDirective(SphinxDirective):
             is_subfigure=True,
             classes=["sphinx-subfigure"] + self.options.get("class", []),
             grid_classes=self.options.get("class-grid", []),
-            item_classes=self.options.get("class-item", []),
+            area_classes=self.options.get("class-area", []),
         )
         self.set_source_info(figure_node)
-        if self.options.get("align") is not None:
-            figure_node["align"] = self.options.get("align")
-        if self.options.get("width") is not None:
-            figure_node["width"] = self.options.get("width")
-        figure_node["subcaptions"] = self.options.get("subcaptions")
+        for attribute_name in ("align", "width", "gap", "subcaptions"):
+            if attribute_name in self.options:
+                figure_node.attributes[attribute_name] = self.options[attribute_name]
         self.add_name(figure_node)
         self.state.nested_parse(self.content, self.content_offset, figure_node)
 

@@ -66,7 +66,11 @@ class SubfigureGridHtml(nodes.General, nodes.Element):
 def visit_subfigure_grid_html(self: HTMLTranslator, node: SubfigureGridHtml) -> None:
     """Visit subfigure grid node."""
     classes = " ".join(node["classes"])
-    self.body.append(f'<div class="{classes}" style="display: grid;">\n')
+    style = "display: grid;"
+    if "gap" in node:
+        # the grid- prefix is deprecated
+        style += f" gap: {node['gap']}; grid-gap: {node['gap']};"
+    self.body.append(f'<div class="{classes}" style="{style}">\n')
 
 
 def depart_subfigure_grid_html(self: HTMLTranslator, node: SubfigureGridHtml) -> None:
@@ -133,19 +137,21 @@ class SubfigureHtmlTransform(SphinxPostTransform):
             grid_node = SubfigureGridHtml(
                 classes=classes + fig_node.get("grid_classes", [])
             )
+            if "gap" in fig_node:
+                grid_node["gap"] = fig_node["gap"]
             children.append(grid_node)
 
             # add image items to grid
             caption = None
-            item_classes = ["sphinx-subfigure-item"] + fig_node.get("item_classes", [])
+            area_classes = ["sphinx-subfigure-area"] + fig_node.get("area_classes", [])
             for child in fig_node:
                 if isinstance(child, nodes.caption):
                     caption = child
                     continue
-                item_node = SubfigureGridItemHtml(classes=item_classes)
+                item_node = SubfigureGridItemHtml(classes=area_classes)
                 # if fig_node["layout_type"] == "areas":
                 item_node["area"] = child["subfigure_area"]
-                if fig_node["subcaptions"] and child.get("alt"):
+                if fig_node.get("subcaptions") and child.get("alt"):
                     item_node["caption-align"] = fig_node["subcaptions"]
                     item_node["caption"] = child["alt"]
                 item_node.append(child)

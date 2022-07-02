@@ -9,10 +9,10 @@ simple
       :alt: hallo
 .
 <document source="<src>/index.rst" subfig_layouts="{'default': {'ss-layout-default-AB': [['A', 'B']]}}">
-    <figure classes="sphinx-subfigure" grid_classes="" is_subfigure="True" item_classes="" layout="{'default': [['A', 'B']]}" subcaptions="True">
+    <figure area_classes="" classes="sphinx-subfigure" grid_classes="" is_subfigure="True" layout="{'default': [['A', 'B']]}">
         <SubfigureGridHtml classes="sphinx-subfigure-grid ss-layout-default-AB">
-            <SubfigureGridItemHtml area="A" classes="sphinx-subfigure-item">
+            <SubfigureGridItemHtml area="A" classes="sphinx-subfigure-area">
                 <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="A" uri="image.png">
-            <SubfigureGridItemHtml area="B" classes="sphinx-subfigure-item">
+            <SubfigureGridItemHtml area="B" classes="sphinx-subfigure-area">
                 <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="B" uri="image.png">
 .
