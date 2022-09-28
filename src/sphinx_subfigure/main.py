@@ -65,13 +65,17 @@ class SubfigureDirective(SphinxDirective):
                 child["subfigure_area"] = string.ascii_uppercase[idx]
             elif (
                 isinstance(child, nodes.paragraph)
-                and len(child.children) == 1
+                and child.children
                 and isinstance(child[0], nodes.image)
             ):
-                number_of_images += 1
-                image = child[0]
-                image["subfigure_area"] = string.ascii_uppercase[idx]
-                child.replace_self(image)
+                images = []
+                for sub in child:
+                    if not isinstance(sub, nodes.image):
+                        continue
+                    number_of_images += 1
+                    images.append(sub)
+                    sub["subfigure_area"] = string.ascii_uppercase[idx]
+                child.replace_self(images)
             elif isinstance(child, nodes.paragraph):
                 if has_caption:
                     raise self.error("Invalid subfigure content (multiple captions)")
