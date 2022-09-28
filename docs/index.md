@@ -276,7 +276,7 @@ Sub-figure with adaptive layouts
 
 ---
 
-:::{subfigure} 2
+:::{subfigure} AB
 :subcaptions: above
 :class-grid: outline
 

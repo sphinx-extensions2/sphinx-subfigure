@@ -59,10 +59,10 @@ class SubfigureDirective(SphinxDirective):
 
         number_of_images = 0
         has_caption = False
-        for idx, child in enumerate(figure_node):
+        for idx, child in enumerate(list(figure_node)):
             if isinstance(child, nodes.image):
+                child["subfigure_area"] = string.ascii_uppercase[number_of_images]
                 number_of_images += 1
-                child["subfigure_area"] = string.ascii_uppercase[idx]
             elif (
                 isinstance(child, nodes.paragraph)
                 and child.children
@@ -72,9 +72,9 @@ class SubfigureDirective(SphinxDirective):
                 for sub in child:
                     if not isinstance(sub, nodes.image):
                         continue
-                    number_of_images += 1
                     images.append(sub)
-                    sub["subfigure_area"] = string.ascii_uppercase[idx]
+                    sub["subfigure_area"] = string.ascii_uppercase[number_of_images]
+                    number_of_images += 1
                 child.replace_self(images)
             elif isinstance(child, nodes.paragraph):
                 if has_caption:
@@ -87,6 +87,7 @@ class SubfigureDirective(SphinxDirective):
                     f"item {idx + 1} is neither (line {child.line})"
                 )
 
+        print(number_of_images)
         layout_string = self.arguments[0] if self.arguments else 1
         figure_node["layout"] = {}
         figure_node["layout"]["default"] = self.generate_layout(
