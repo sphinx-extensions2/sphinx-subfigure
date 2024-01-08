@@ -116,7 +116,6 @@ class SubfigureHtmlTransform(SphinxPostTransform):
         for fig_node in findall(
             self.document, lambda n: "is_subfigure" in getattr(n, "attributes", {})
         ):
-
             # initiate figure children
             children = []
 
