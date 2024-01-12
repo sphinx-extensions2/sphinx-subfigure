@@ -79,7 +79,10 @@ class SubfigureDirective(SphinxDirective):
             elif isinstance(child, nodes.paragraph):
                 if has_caption:
                     raise self.error("Invalid subfigure content (multiple captions)")
-                child.replace_self(nodes.caption(child.rawsource, *child.children))
+                caption = nodes.caption(child.rawsource, *child.children)
+                caption.source = child.source
+                caption.line = child.line
+                child.replace_self(caption)
                 has_caption = True
             else:
                 raise self.error(
