@@ -90,7 +90,6 @@ class SubfigureDirective(SphinxDirective):
                     f"item {idx + 1} is neither (line {child.line})"
                 )
 
-        print(number_of_images)
         layout_string = self.arguments[0] if self.arguments else 1
         figure_node["layout"] = {}
         figure_node["layout"]["default"] = self.generate_layout(
