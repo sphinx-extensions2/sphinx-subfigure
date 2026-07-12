@@ -203,7 +203,8 @@ Keywords:
 1. **Description**: Include a meaningful description explaining the change
 2. **Tests**: Include fixture/test cases for new functionality or bug fixes
 3. **Documentation**: Update `docs/index.md` (and its options table) if behaviour changes
-4. **Code Quality**: Ensure `pre-commit run --all-files` passes
+4. **Changelog**: Add user-facing changes to `CHANGELOG.md` under the upcoming version
+5. **Code Quality**: Ensure `pre-commit run --all-files` passes
 
 ## Key Files
 
