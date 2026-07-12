@@ -15,3 +15,60 @@ simple
         <SubfigureEnvLatex width="0.495">
             <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="B" uri="image.png">
 .
+
+non-progression layout (falls back to plain figure)
+.
+.. subfigure:: B|A
+
+   .. image:: image.png
+      :alt: hallo
+
+   .. image:: image.png
+      :alt: hallo
+.
+<document source="<src>/index.rst">
+    <figure area_classes="" classes="sphinx-subfigure" grid_classes="" is_subfigure="true" layout="{'default': [['B'], ['A']]}">
+        <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="A" uri="image.png">
+        <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="B" uri="image.png">
+.
+
+empty leading area
+.
+.. subfigure:: .A
+
+   .. image:: image.png
+      :alt: hallo
+.
+<document source="<src>/index.rst">
+    <figure area_classes="" classes="sphinx-subfigure" grid_classes="" is_subfigure="true" layout="{'default': [['.', 'A']]}">
+        <SubfigureEnvLatex width="0.495">
+            <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="A" uri="image.png">
+.
+
+vertical span (falls back to plain figure)
+.
+.. subfigure:: .A|.A
+
+   .. image:: image.png
+      :alt: hallo
+.
+<document source="<src>/index.rst">
+    <figure area_classes="" classes="sphinx-subfigure" grid_classes="" is_subfigure="true" layout="{'default': [['.', 'A'], ['.', 'A']]}">
+        <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="A" uri="image.png">
+.
+
+vertical span mid-grid (falls back to plain figure)
+.
+.. subfigure:: AB|.B
+
+   .. image:: image.png
+      :alt: hallo
+
+   .. image:: image.png
+      :alt: hallo
+.
+<document source="<src>/index.rst">
+    <figure area_classes="" classes="sphinx-subfigure" grid_classes="" is_subfigure="true" layout="{'default': [['A', 'B'], ['.', 'B']]}">
+        <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="A" uri="image.png">
+        <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="B" uri="image.png">
+.

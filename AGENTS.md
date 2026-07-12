@@ -104,13 +104,15 @@ pytest
 pytest tests/test_simple.py::test_build_html
 
 # Run with coverage (as CI does)
-pytest --cov=src --cov-report=term-missing
+pytest --cov=sphinx_subfigure --cov-report=term-missing
 
 # Regenerate fixture files after an intentional output change
 pytest --regen-file-failure
 ```
 
-Tests can also be run via `tox` (e.g. `tox -e py311`).
+Tests can also be run via `tox`, using a python + sphinx factor env
+(e.g. `tox -e py311-sphinx9` — note a bare `tox -e py311` is NOT a
+defined env and would run no tests).
 
 ### Documentation
 

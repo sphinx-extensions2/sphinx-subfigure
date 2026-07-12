@@ -1,3 +1,5 @@
+"""The ``subfigure`` directive, and its layout parsing/validation."""
+
 from __future__ import annotations
 
 import math
@@ -34,7 +36,8 @@ class SubfigureDirective(SphinxDirective):
         "subcaptions": lambda x: directives.choice(x, ("above", "below")),
         "width": directives.length_or_percentage_or_unitless,
         "align": lambda x: directives.choice(x, ("left", "center", "right")),
-        "gap": directives.length_or_percentage_or_unitless,
+        # unitless gap values are not valid CSS, so default them to px
+        "gap": lambda x: directives.length_or_percentage_or_unitless(x, "px"),
         "name": directives.unchanged,
         "class": directives.class_option,
         "class-grid": directives.class_option,
@@ -63,8 +66,10 @@ class SubfigureDirective(SphinxDirective):
         has_caption = False
         for idx, child in enumerate(list(figure_node)):
             if isinstance(child, nodes.image):
-                child["subfigure_area"] = string.ascii_uppercase[number_of_images]
+                child["subfigure_area"] = self._area_identifier(number_of_images)
                 number_of_images += 1
+            elif isinstance(child, nodes.comment):
+                figure_node.remove(child)
             elif (
                 isinstance(child, nodes.paragraph)
                 and child.children
@@ -73,9 +78,16 @@ class SubfigureDirective(SphinxDirective):
                 images = []
                 for sub in child:
                     if not isinstance(sub, nodes.image):
-                        continue
+                        # allow whitespace between images, but do not silently
+                        # discard any other inline content
+                        if isinstance(sub, nodes.Text) and not sub.astext().strip():
+                            continue
+                        raise self.error(
+                            "Invalid subfigure content "
+                            f"(non-image content within an image paragraph: {sub.astext()!r})"
+                        )
                     images.append(sub)
-                    sub["subfigure_area"] = string.ascii_uppercase[number_of_images]
+                    sub["subfigure_area"] = self._area_identifier(number_of_images)
                     number_of_images += 1
                 child.replace_self(images)
             elif isinstance(child, nodes.paragraph):
@@ -93,6 +105,8 @@ class SubfigureDirective(SphinxDirective):
                 )
 
         print(number_of_images)
+        if not number_of_images:
+            raise self.error("Invalid subfigure content (no images found)")
         layout_string = self.arguments[0] if self.arguments else 1
         figure_node["layout"] = {}
         figure_node["layout"]["default"] = self.generate_layout(
@@ -107,11 +121,24 @@ class SubfigureDirective(SphinxDirective):
 
         return [figure_node]
 
+    def _area_identifier(self, index: int) -> str:
+        """Return the area identifier (A-Z) for an image index."""
+        if index >= len(string.ascii_uppercase):
+            raise self.error(
+                "Invalid subfigure content "
+                f"(maximum of {len(string.ascii_uppercase)} images exceeded)"
+            )
+        return string.ascii_uppercase[index]
+
     def generate_layout(
-        self, string: str, items: int, ltype: str = "layout", validate: bool = True
+        self,
+        layout_string: str,
+        items: int,
+        ltype: str = "layout",
+        validate: bool = True,
     ) -> list[list[str]]:
         """Generate a layout from a string."""
-        layout = self._generate_layout(string, items)
+        layout = self._generate_layout(layout_string, items)
         if validate:
             self._validate_layout(layout, items, ltype)
         return layout
@@ -178,6 +205,10 @@ class SubfigureDirective(SphinxDirective):
         except ValueError:
             pass
         else:
+            if layout_columns < 1:
+                raise self.error(
+                    "Invalid subfigure layout (number of columns must be positive)"
+                )
             for row in range(math.ceil(items / layout_columns)):
                 layout.append([])
                 for col in range(layout_columns):
@@ -188,13 +219,10 @@ class SubfigureDirective(SphinxDirective):
                     layout[row].append(area)
             return layout
 
-        # if a string is given, parse it as a grid layout, with columns delimited by "|",
+        # if a string is given, parse it as a grid layout, with rows delimited by "|",
         # ignore spaces, named areas A-Z and empty areas are filled with "."
-        for row_string in layout_string.split("|"):
-            row = []
-            for col in row_string:
-                if not col:
-                    continue  # ignore spaces
-                row.append(col)
-            layout.append(row)
-        return layout
+        # spaces are ignored, so they can be used for visual alignment
+        return [
+            [col for col in row_string if not col.isspace()]
+            for row_string in layout_string.split("|")
+        ]

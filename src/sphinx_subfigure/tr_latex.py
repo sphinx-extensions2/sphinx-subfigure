@@ -1,3 +1,5 @@
+"""LaTeX support: post-transform and subfigure-environment nodes/visitors."""
+
 from __future__ import annotations
 
 import string
@@ -8,7 +10,7 @@ from sphinx.transforms.post_transforms import SphinxPostTransform
 from sphinx.writers.latex import LaTeXTranslator
 
 
-def setup_latex(app: Sphinx):
+def setup_latex(app: Sphinx) -> None:
     """Setup the extension for LaTeX building."""
     app.add_latex_package("subcaption")
     app.add_post_transform(SubfigureLaTexTransform)
@@ -48,37 +50,49 @@ class SubfigureLaTexTransform(SphinxPostTransform):
     def run(self) -> None:
         """Run the transform."""
 
-        for fig_node in self.document.findall(
-            lambda n: "is_subfigure" in getattr(n, "attributes", {})
-        ):
+        for fig_node in self.document.findall(nodes.figure):
+            if "is_subfigure" not in fig_node.attributes:
+                continue
             layout = fig_node["layout"]["default"]
             if not layout:
                 continue
             # if the layout is a simple progression of areas,
             # we can use just the subfigure environment to create a grid
             progression = True
-            next = (0, "A")
-            flattened = []
+            next_index = 0
+            flattened: list[list] = []
             for row in layout:
-                for idx, area in enumerate(row):
+                # only areas started in this row may be merged as column spans,
+                # so that multi-row (vertical) spans are not misread as wider columns
+                row_start = len(flattened)
+                for area in row:
                     if area == ".":
-                        pass
-                    elif idx != 0 and flattened[-1][0] == area:
+                        continue
+                    if len(flattened) > row_start and flattened[-1][0] == area:
+                        # the area spans multiple columns of this row
                         flattened[-1][1] += 1
-                    elif area == next[1]:
+                    elif (
+                        next_index < len(string.ascii_uppercase)
+                        and area == (string.ascii_uppercase[next_index])
+                    ):
                         flattened.append([area, 1, False])
-                        next = (next[0] + 1, string.ascii_uppercase[next[0] + 1])
+                        next_index += 1
                     else:
                         progression = False
                         break
                 if not progression:
                     break
-                flattened[-1][2] = True
+                if flattened:
+                    # mark the last area of the row, to start a new row after it
+                    flattened[-1][2] = True
 
-            flattened[-1][2] = False
-
-            if not progression:
+            if not progression or not flattened:
+                # the layout cannot be represented as a simple grid of subfigures,
+                # so leave the figure to render as a plain figure of images
                 continue
+
+            # no new row after the final area
+            flattened[-1][2] = False
 
             width = round(0.99 / len(layout[0]), 3)
 
@@ -89,7 +103,7 @@ class SubfigureLaTexTransform(SphinxPostTransform):
                     children.append(child)
                 else:
                     subcaption_node = SubfigureEnvLatex(
-                        width=width * flattened[subfigs][1]
+                        width=round(width * flattened[subfigs][1], 3)
                     )
                     if flattened[subfigs][2]:
                         subcaption_node["new-row"] = True

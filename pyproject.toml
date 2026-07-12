@@ -29,6 +29,7 @@ dependencies = ["sphinx>=8,<10"]
 testing = [
     "beautifulsoup4",
     "defusedxml",
+    "myst-parser",
     "pytest",
     "pytest-cov",
     "pytest-param-files~=0.6.0",

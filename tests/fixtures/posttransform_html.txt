@@ -16,3 +16,32 @@ simple
             <SubfigureGridItemHtml area="B" classes="sphinx-subfigure-area">
                 <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="B" uri="image.png">
 .
+
+layout with spaces
+.
+.. subfigure:: A B|C D
+
+   .. image:: image.png
+      :alt: hallo
+
+   .. image:: image.png
+      :alt: hallo
+
+   .. image:: image.png
+      :alt: hallo
+
+   .. image:: image.png
+      :alt: hallo
+.
+<document source="<src>/index.rst" subfig_layouts="{'default': {'ss-layout-default-AB_CD': [['A', 'B'], ['C', 'D']]}}">
+    <figure area_classes="" classes="sphinx-subfigure" grid_classes="" is_subfigure="true" layout="{'default': [['A', 'B'], ['C', 'D']]}">
+        <SubfigureGridHtml classes="sphinx-subfigure-grid ss-layout-default-AB_CD">
+            <SubfigureGridItemHtml area="A" classes="sphinx-subfigure-area">
+                <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="A" uri="image.png">
+            <SubfigureGridItemHtml area="B" classes="sphinx-subfigure-area">
+                <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="B" uri="image.png">
+            <SubfigureGridItemHtml area="C" classes="sphinx-subfigure-area">
+                <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="C" uri="image.png">
+            <SubfigureGridItemHtml area="D" classes="sphinx-subfigure-area">
+                <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="D" uri="image.png">
+.

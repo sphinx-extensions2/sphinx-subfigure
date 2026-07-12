@@ -1,3 +1,5 @@
+"""HTML support: post-transform, grid nodes/visitors, and responsive CSS injection."""
+
 from __future__ import annotations
 
 from html import escape
@@ -9,7 +11,7 @@ from sphinx.transforms.post_transforms import SphinxPostTransform
 from sphinx.writers.html import HTMLTranslator
 
 
-def setup_html(app: Sphinx):
+def setup_html(app: Sphinx) -> None:
     """Setup the extension for HTML building."""
     app.add_post_transform(SubfigureHtmlTransform)
     app.add_node(
@@ -36,7 +38,12 @@ def html_page_context(
         return
 
     style = []
-    for size, cls_layout in doctree["subfig_layouts"].items():
+    # iterate in canonical breakpoint order (not first-seen order), so that with
+    # multiple figures on a page, wider min-width rules always override narrower ones
+    for size in ("default", "sm", "lg", "xl", "xxl"):
+        if size not in doctree["subfig_layouts"]:
+            continue
+        cls_layout = doctree["subfig_layouts"][size]
         if size == "sm":
             style.append("@media (max-width: 576px) {")
         if size == "lg":
@@ -110,9 +117,9 @@ class SubfigureHtmlTransform(SphinxPostTransform):
     def run(self) -> None:
         """Run the transform."""
 
-        for fig_node in self.document.findall(
-            lambda n: "is_subfigure" in getattr(n, "attributes", {})
-        ):
+        for fig_node in self.document.findall(nodes.figure):
+            if "is_subfigure" not in fig_node.attributes:
+                continue
             # initiate figure children
             children = []
 
