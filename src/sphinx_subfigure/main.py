@@ -9,16 +9,23 @@ from docutils import nodes
 from docutils.parsers.rst import directives
 from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
+from sphinx.util.typing import ExtensionMetadata
 
+from . import __version__
 from .tr_html import setup_html
 from .tr_latex import setup_latex
 
 
-def setup(app: Sphinx) -> None:
+def setup(app: Sphinx) -> ExtensionMetadata:
     """Setup the extension."""
     app.add_directive("subfigure", SubfigureDirective)
     setup_html(app)
     setup_latex(app)
+    return {
+        "version": __version__,
+        "parallel_read_safe": True,
+        "parallel_write_safe": True,
+    }
 
 
 class SubfigureDirective(SphinxDirective):
@@ -104,7 +111,6 @@ class SubfigureDirective(SphinxDirective):
                     f"item {idx + 1} is neither (line {child.line})"
                 )
 
-        print(number_of_images)
         if not number_of_images:
             raise self.error("Invalid subfigure content (no images found)")
         layout_string = self.arguments[0] if self.arguments else 1
