@@ -1,3 +1,5 @@
+"""LaTeX support: post-transform and subfigure-environment nodes/visitors."""
+
 from __future__ import annotations
 
 import string
@@ -8,7 +10,7 @@ from sphinx.transforms.post_transforms import SphinxPostTransform
 from sphinx.writers.latex import LaTeXTranslator
 
 
-def setup_latex(app: Sphinx):
+def setup_latex(app: Sphinx) -> None:
     """Setup the extension for LaTeX building."""
     app.add_latex_package("subcaption")
     app.add_post_transform(SubfigureLaTexTransform)
@@ -48,9 +50,9 @@ class SubfigureLaTexTransform(SphinxPostTransform):
     def run(self) -> None:
         """Run the transform."""
 
-        for fig_node in self.document.findall(
-            lambda n: "is_subfigure" in getattr(n, "attributes", {})
-        ):
+        for fig_node in self.document.findall(nodes.figure):
+            if "is_subfigure" not in fig_node.attributes:
+                continue
             layout = fig_node["layout"]["default"]
             if not layout:
                 continue
@@ -60,10 +62,13 @@ class SubfigureLaTexTransform(SphinxPostTransform):
             next_index = 0
             flattened: list[list] = []
             for row in layout:
-                for idx, area in enumerate(row):
+                # only areas started in this row may be merged as column spans,
+                # so that multi-row (vertical) spans are not misread as wider columns
+                row_start = len(flattened)
+                for area in row:
                     if area == ".":
                         continue
-                    if idx != 0 and flattened and flattened[-1][0] == area:
+                    if len(flattened) > row_start and flattened[-1][0] == area:
                         # the area spans multiple columns of this row
                         flattened[-1][1] += 1
                     elif (
@@ -98,7 +103,7 @@ class SubfigureLaTexTransform(SphinxPostTransform):
                     children.append(child)
                 else:
                     subcaption_node = SubfigureEnvLatex(
-                        width=width * flattened[subfigs][1]
+                        width=round(width * flattened[subfigs][1], 3)
                     )
                     if flattened[subfigs][2]:
                         subcaption_node["new-row"] = True

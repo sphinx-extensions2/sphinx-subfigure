@@ -47,9 +47,10 @@ Now add a `subfigure` directive to your document:
 2. Layouts are formed by composing the areas into a grid, with rows delimited by `|`.
 3. Each area must be used exactly once in the layout, and form a single rectangle.
 4. "Empty" areas can be designated with `.`
-5. Additional layouts can be defined with `:layout-sm:`, `:layout-lg:`, `:layout-xl:`, for different screen sizes (HTML only).
+5. Spaces in the layout are ignored, so they can be used for visual alignment.
+6. Additional layouts can be defined with `:layout-sm:`, `:layout-lg:`, `:layout-xl:`, and `:layout-xxl:`, for different screen sizes (HTML only).
 
-![Responsive sub-figure](subfigure-responsive.gif)
+![Responsive sub-figure](https://raw.githubusercontent.com/sphinx-extensions2/sphinx-subfigure/main/subfigure-responsive.gif)
 
 [pypi-badge]: https://img.shields.io/pypi/v/sphinx_subfigure.svg
 [pypi-link]: https://pypi.org/project/sphinx_subfigure

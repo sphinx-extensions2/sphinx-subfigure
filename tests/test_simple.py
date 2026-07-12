@@ -1,3 +1,5 @@
+"""Tests for the ``subfigure`` directive, across builders."""
+
 import base64
 import re
 from pathlib import Path
@@ -53,14 +55,14 @@ def test_posttransform_latex(file_params, sphinx_doctree: CreateDoctree):
 @pytest.mark.param_file(FIXTURE_PATH / "build_latex.txt")
 def test_build_latex(file_params, sphinx_doctree: CreateDoctree):
     """Test LaTeX build output."""
-    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    # pin the project name, since the .tex file is named after it
+    # and the default project name differs between sphinx versions
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"], "project": "test"})
     sphinx_doctree.buildername = "latex"
     sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
     result = sphinx_doctree(file_params.content)
     assert not result.warnings
-    # the tex file name is derived from the project name,
-    # whose default differs between sphinx versions
-    tex = next(iter(Path(result.builder.outdir).glob("*.tex"))).read_text()
+    tex = Path(result.builder.outdir).joinpath("test.tex").read_text()
     fig_tex = re.findall(r"\\begin\{figure\}.*\\end\{figure\}", tex, re.DOTALL)[0]
     file_params.assert_expected(fig_tex, rstrip_lines=True)
 
@@ -73,6 +75,90 @@ def test_too_many_images(sphinx_doctree: CreateDoctree):
     images = "\n\n".join("   .. image:: image.png" for _ in range(27))
     result = sphinx_doctree(f".. subfigure:: 1\n\n{images}\n")
     assert "maximum of 26 images exceeded" in result.warnings
+
+
+@pytest.mark.parametrize(
+    "content,message",
+    [
+        pytest.param(
+            ".. subfigure:: 0\n\n   .. image:: image.png\n",
+            "number of columns must be positive",
+            id="zero columns",
+        ),
+        pytest.param(
+            ".. subfigure::\n\n   Just a caption\n",
+            "no images found",
+            id="no images",
+        ),
+    ],
+)
+def test_invalid_content(sphinx_doctree: CreateDoctree, content: str, message: str):
+    """Test that invalid content produces a clear directive error, not a crash."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(content)
+    assert message in result.warnings
+
+
+def test_comments_ignored(sphinx_doctree: CreateDoctree):
+    """Test that comments in the directive content are ignored."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        ".. subfigure:: A\n\n   .. a comment\n\n   .. image:: image.png\n"
+    )
+    assert not result.warnings
+    assert "comment" not in result.get_resolved_pformat()
+
+
+def test_gap_unitless(sphinx_doctree: CreateDoctree):
+    """Test that unitless gap values default to px (unitless is invalid CSS)."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        ".. subfigure:: AB\n   :gap: 5\n\n"
+        "   .. image:: image.png\n\n"
+        "   .. image:: image.png\n"
+    )
+    assert not result.warnings
+    html = Path(result.builder.outdir).joinpath("index.html").read_text()
+    assert "gap: 5px;" in html
+
+
+def test_css_breakpoint_order(sphinx_doctree: CreateDoctree):
+    """Test that media-query blocks are emitted in ascending breakpoint order,
+    regardless of the order in which figures define them (else, with equal
+    specificity, a narrower min-width rule would override a wider one)."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        ".. subfigure:: AB\n   :layout-xl: A|B\n\n"
+        "   .. image:: image.png\n\n"
+        "   .. image:: image.png\n\n"
+        ".. subfigure:: AB\n   :layout-lg: A|B\n   :layout-xl: AB\n\n"
+        "   .. image:: image.png\n\n"
+        "   .. image:: image.png\n"
+    )
+    assert not result.warnings
+    html = Path(result.builder.outdir).joinpath("index.html").read_text()
+    assert html.index("min-width: 992px") < html.index("min-width: 1200px")
+
+
+def test_myst_image_paragraph_trailing_text(sphinx_doctree: CreateDoctree):
+    """Test that non-whitespace inline content in a MyST image paragraph
+    errors, rather than being silently discarded."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure", "myst_parser"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        "```{subfigure} A\n![a](image.png) trailing text\n```\n",
+        filename="index.md",
+    )
+    assert "non-image content within an image paragraph" in result.warnings
 
 
 @pytest.mark.param_file(FIXTURE_PATH / "posttransform_man.txt")
