@@ -63,7 +63,7 @@ class SubfigureDirective(SphinxDirective):
         has_caption = False
         for idx, child in enumerate(list(figure_node)):
             if isinstance(child, nodes.image):
-                child["subfigure_area"] = string.ascii_uppercase[number_of_images]
+                child["subfigure_area"] = self._area_identifier(number_of_images)
                 number_of_images += 1
             elif (
                 isinstance(child, nodes.paragraph)
@@ -75,7 +75,7 @@ class SubfigureDirective(SphinxDirective):
                     if not isinstance(sub, nodes.image):
                         continue
                     images.append(sub)
-                    sub["subfigure_area"] = string.ascii_uppercase[number_of_images]
+                    sub["subfigure_area"] = self._area_identifier(number_of_images)
                     number_of_images += 1
                 child.replace_self(images)
             elif isinstance(child, nodes.paragraph):
@@ -107,11 +107,25 @@ class SubfigureDirective(SphinxDirective):
 
         return [figure_node]
 
+    def _area_identifier(self, index: int) -> str:
+        """Return the area identifier (A-Z) for an image index."""
+        try:
+            return string.ascii_uppercase[index]
+        except IndexError:
+            raise self.error(
+                "Invalid subfigure content "
+                f"(maximum of {len(string.ascii_uppercase)} images exceeded)"
+            ) from None
+
     def generate_layout(
-        self, string: str, items: int, ltype: str = "layout", validate: bool = True
+        self,
+        layout_string: str,
+        items: int,
+        ltype: str = "layout",
+        validate: bool = True,
     ) -> list[list[str]]:
         """Generate a layout from a string."""
-        layout = self._generate_layout(string, items)
+        layout = self._generate_layout(layout_string, items)
         if validate:
             self._validate_layout(layout, items, ltype)
         return layout
@@ -188,12 +202,12 @@ class SubfigureDirective(SphinxDirective):
                     layout[row].append(area)
             return layout
 
-        # if a string is given, parse it as a grid layout, with columns delimited by "|",
+        # if a string is given, parse it as a grid layout, with rows delimited by "|",
         # ignore spaces, named areas A-Z and empty areas are filled with "."
         for row_string in layout_string.split("|"):
             row = []
             for col in row_string:
-                if not col:
+                if col.isspace():
                     continue  # ignore spaces
                 row.append(col)
             layout.append(row)

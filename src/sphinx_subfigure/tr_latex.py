@@ -57,28 +57,37 @@ class SubfigureLaTexTransform(SphinxPostTransform):
             # if the layout is a simple progression of areas,
             # we can use just the subfigure environment to create a grid
             progression = True
-            next = (0, "A")
-            flattened = []
+            next_index = 0
+            flattened: list[list] = []
             for row in layout:
                 for idx, area in enumerate(row):
                     if area == ".":
-                        pass
-                    elif idx != 0 and flattened[-1][0] == area:
+                        continue
+                    if idx != 0 and flattened and flattened[-1][0] == area:
+                        # the area spans multiple columns of this row
                         flattened[-1][1] += 1
-                    elif area == next[1]:
+                    elif (
+                        next_index < len(string.ascii_uppercase)
+                        and area == (string.ascii_uppercase[next_index])
+                    ):
                         flattened.append([area, 1, False])
-                        next = (next[0] + 1, string.ascii_uppercase[next[0] + 1])
+                        next_index += 1
                     else:
                         progression = False
                         break
                 if not progression:
                     break
-                flattened[-1][2] = True
+                if flattened:
+                    # mark the last area of the row, to start a new row after it
+                    flattened[-1][2] = True
 
-            flattened[-1][2] = False
-
-            if not progression:
+            if not progression or not flattened:
+                # the layout cannot be represented as a simple grid of subfigures,
+                # so leave the figure to render as a plain figure of images
                 continue
+
+            # no new row after the final area
+            flattened[-1][2] = False
 
             width = round(0.99 / len(layout[0]), 3)
 

@@ -65,6 +65,16 @@ def test_build_latex(file_params, sphinx_doctree: CreateDoctree):
     file_params.assert_expected(fig_tex, rstrip_lines=True)
 
 
+def test_too_many_images(sphinx_doctree: CreateDoctree):
+    """Test that exceeding the maximum number of images errors gracefully."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    images = "\n\n".join("   .. image:: image.png" for _ in range(27))
+    result = sphinx_doctree(f".. subfigure:: 1\n\n{images}\n")
+    assert "maximum of 26 images exceeded" in result.warnings
+
+
 @pytest.mark.param_file(FIXTURE_PATH / "posttransform_man.txt")
 def test_posttransform_man(file_params, sphinx_doctree: CreateDoctree):
     """Test AST output after post-transforms, when using the Man builder."""
