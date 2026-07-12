@@ -9,30 +9,73 @@ on:
 
 jobs:
 
+  pre-commit:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.11"
+    - uses: pre-commit/action@v3.0.1
+
   tests:
 
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        sphinx: [">=8,<9", ">=9,<10"]
         os: [ubuntu-latest]
         include:
         - os: windows-latest
-          python-version: "3.8"
+          python-version: "3.11"
+          sphinx: ">=8,<9"
+        - os: windows-latest
+          python-version: "3.14"
+          sphinx: ">=9,<10"
 
     runs-on: ${{ matrix.os }}
 
+    name: "pytest: py${{ matrix.python-version }}, sphinx${{ matrix.sphinx }}, on ${{ matrix.os }}"
+
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[testing]
+        pip install -e ".[testing]" "sphinx${{ matrix.sphinx }}"
     - name: Run pytest
-      run: pytest --cov=src --cov-report=xml --cov-report=term-missing
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      run: pytest --cov=sphinx_subfigure --cov-report=term-missing
+
+  publish:
+
+    name: Publish to PyPI
+    needs: [pre-commit, tests]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && github.repository == 'sphinx-extensions2/sphinx-subfigure'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/sphinx-subfigure/
+    permissions:
+      id-token: write
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.12"
+    - name: Build package
+      run: |
+        python -m pip install build
+        python -m build
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
