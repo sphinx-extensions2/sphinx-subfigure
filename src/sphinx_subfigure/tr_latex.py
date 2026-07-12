@@ -7,8 +7,6 @@ from sphinx.application import Sphinx
 from sphinx.transforms.post_transforms import SphinxPostTransform
 from sphinx.writers.latex import LaTeXTranslator
 
-from ._compat import findall
-
 
 def setup_latex(app: Sphinx):
     """Setup the extension for LaTeX building."""
@@ -50,9 +48,8 @@ class SubfigureLaTexTransform(SphinxPostTransform):
     def run(self) -> None:
         """Run the transform."""
 
-        # docutils <0.18 (traverse) >=0.18 (findall) compatibility
-        for fig_node in findall(
-            self.document, lambda n: "is_subfigure" in getattr(n, "attributes", {})
+        for fig_node in self.document.findall(
+            lambda n: "is_subfigure" in getattr(n, "attributes", {})
         ):
             layout = fig_node["layout"]["default"]
             if not layout:

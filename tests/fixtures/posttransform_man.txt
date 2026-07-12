@@ -9,7 +9,7 @@ simple
       :alt: hallo
 .
 <document source="<src>/index.rst">
-    <figure area_classes="" classes="sphinx-subfigure" grid_classes="" is_subfigure="True" layout="{'default': [['A', 'B']]}">
+    <figure area_classes="" classes="sphinx-subfigure" grid_classes="" is_subfigure="true" layout="{'default': [['A', 'B']]}">
         <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="A" uri="image.png">
         <image alt="hallo" candidates="{'*': 'image.png'}" subfigure_area="B" uri="image.png">
 .

@@ -44,8 +44,10 @@ class SubfigureDirective(SphinxDirective):
     def run(self) -> list[nodes.Element]:
         """Run the directive."""
         self.assert_has_content()
+        # note the attribute value is a string, not a bool,
+        # so that its doctree serialization is stable across docutils versions
         figure_node = nodes.figure(
-            is_subfigure=True,
+            is_subfigure="true",
             classes=["sphinx-subfigure"] + self.options.get("class", []),
             grid_classes=self.options.get("class-grid", []),
             area_classes=self.options.get("class-area", []),
@@ -126,7 +128,7 @@ class SubfigureDirective(SphinxDirective):
 
         prefix = f"Invalid subfigure {ltype}"
 
-        area_indices: dict[str, list[tuple[int, int]]] = {}
+        area_indices: dict[str, set[tuple[int, int]]] = {}
 
         # check all rows have the same number of columns, and retrieve indices of each area
         if not layout:

@@ -8,8 +8,6 @@ from sphinx.application import Sphinx
 from sphinx.transforms.post_transforms import SphinxPostTransform
 from sphinx.writers.html import HTMLTranslator
 
-from ._compat import findall
-
 
 def setup_html(app: Sphinx):
     """Setup the extension for HTML building."""
@@ -112,9 +110,8 @@ class SubfigureHtmlTransform(SphinxPostTransform):
     def run(self) -> None:
         """Run the transform."""
 
-        # docutils <0.18 (traverse) >=0.18 (findall) compatibility
-        for fig_node in findall(
-            self.document, lambda n: "is_subfigure" in getattr(n, "attributes", {})
+        for fig_node in self.document.findall(
+            lambda n: "is_subfigure" in getattr(n, "attributes", {})
         ):
             # initiate figure children
             children = []
@@ -127,9 +124,9 @@ class SubfigureHtmlTransform(SphinxPostTransform):
                 layout_class = f"ss-layout-{size}-" + "_".join(
                     ["".join(a.replace(".", "d") for a in row) for row in layout]
                 )
-                self.document["subfig_layouts"].setdefault(size, {})[
-                    layout_class
-                ] = layout
+                self.document["subfig_layouts"].setdefault(size, {})[layout_class] = (
+                    layout
+                )
                 classes.append(layout_class)
 
             # add grid

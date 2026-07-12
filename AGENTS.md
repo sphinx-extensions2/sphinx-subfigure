@@ -27,8 +27,7 @@ src/sphinx_subfigure/
 ├── __init__.py             # __version__ and setup() re-export
 ├── main.py                 # SubfigureDirective: content parsing, layout generation + validation
 ├── tr_html.py              # HTML post-transform, grid/item nodes, responsive CSS injection
-├── tr_latex.py             # LaTeX post-transform, subfigure environment nodes
-└── _compat.py              # docutils <0.18 findall/traverse compatibility
+└── tr_latex.py             # LaTeX post-transform, subfigure environment nodes
 
 tests/
 ├── test_simple.py          # all tests (pytest-param-files + sphinx-pytest)
@@ -116,8 +115,11 @@ Tests can also be run via `tox` (e.g. `tox -e py311`).
 ### Documentation
 
 ```bash
-# Build docs (also: BUILDER=linkcheck tox -e docs)
-tox -e docs
+# Build docs from clean (also: BUILDER=linkcheck tox -e docs-clean)
+tox -e docs-clean
+
+# Incremental docs build
+tox -e docs-update
 
 # Or manually
 pip install -e ".[docs]"
@@ -165,8 +167,8 @@ pre-commit run --all-files
   annotation syntax (`list[str]`, `X | None`)
 - Complete type annotations on all function signatures
 - Sphinx-style docstrings; short module docstrings on every module
-- Style is enforced by pre-commit (see `.pre-commit-config.yaml`); run
-  `pre-commit run --all-files` before committing
+- Style is enforced by pre-commit (see `.pre-commit-config.yaml`), using `ruff-check`
+  (with `--fix`) and `ruff-format`; run `pre-commit run --all-files` before committing
 - User-facing directive errors should be raised via `self.error(...)` inside the
   directive, with messages prefixed to identify the failing option
   (e.g. `Invalid subfigure layout-sm (...)`)
