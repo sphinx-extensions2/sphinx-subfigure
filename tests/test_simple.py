@@ -104,6 +104,11 @@ def test_too_many_images(sphinx_doctree: CreateDoctree):
             "no images found",
             id="no images",
         ),
+        pytest.param(
+            ".. |img| image:: image.png\n\n.. subfigure:: AB\n\n   |img| |img|\n",
+            "substitution images are not supported",
+            id="substitution images",
+        ),
     ],
 )
 def test_invalid_content(sphinx_doctree: CreateDoctree, content: str, message: str):
