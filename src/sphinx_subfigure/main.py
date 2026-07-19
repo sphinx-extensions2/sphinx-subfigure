@@ -97,6 +97,13 @@ class SubfigureDirective(SphinxDirective):
                     sub["subfigure_area"] = self._area_identifier(number_of_images)
                     number_of_images += 1
                 child.replace_self(images)
+            elif isinstance(child, nodes.paragraph) and any(
+                isinstance(sub, nodes.substitution_reference) for sub in child
+            ):
+                raise self.error(
+                    "Invalid subfigure content (substitution images are not supported; "
+                    "use image directives or MyST images directly)"
+                )
             elif isinstance(child, nodes.paragraph):
                 if has_caption:
                     raise self.error("Invalid subfigure content (multiple captions)")
