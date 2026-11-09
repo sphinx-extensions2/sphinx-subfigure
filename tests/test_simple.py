@@ -115,6 +115,26 @@ def test_invalid_content(sphinx_doctree: CreateDoctree, content: str, message: s
     assert message in result.warnings
 
 
+@pytest.mark.parametrize(
+    "child,line",
+    [
+        # a rubric node carries no line number of its own,
+        # so the directive's line is reported instead
+        pytest.param("   .. rubric:: A rubric\n", 3, id="no child line"),
+        pytest.param("   * a list\n", 7, id="child line"),
+    ],
+)
+def test_invalid_content_line(sphinx_doctree: CreateDoctree, child: str, line: int):
+    """Test that invalid content errors report a line number, never ``line None``."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        f"Text\n\n.. subfigure:: A\n\n   .. image:: image.png\n\n{child}"
+    )
+    assert f"item 2 is neither (line {line})" in result.warnings
+
+
 def test_comments_ignored(sphinx_doctree: CreateDoctree):
     """Test that comments in the directive content are ignored."""
     sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
@@ -140,6 +160,32 @@ def test_gap_unitless(sphinx_doctree: CreateDoctree):
     assert not result.warnings
     html = Path(result.builder.outdir).joinpath("index.html").read_text()
     assert "gap: 5px;" in html
+
+
+@pytest.mark.parametrize(
+    "width,style",
+    [
+        pytest.param("300", "width: 300px", id="unitless"),
+        pytest.param("50%", "width: 50%", id="percentage"),
+        pytest.param("10em", "width: 10em", id="length"),
+    ],
+)
+def test_width_units(sphinx_doctree: CreateDoctree, width: str, style: str):
+    """Test that unitless width values default to px (unitless is invalid CSS),
+    as for ``gap``, while explicit units are kept."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        f".. subfigure:: AB\n   :width: {width}\n\n"
+        "   .. image:: image.png\n\n"
+        "   .. image:: image.png\n"
+    )
+    assert not result.warnings
+    html = BeautifulSoup(
+        Path(result.builder.outdir).joinpath("index.html").read_text(), "html.parser"
+    )
+    assert html.select_one("figure.sphinx-subfigure")["style"] == style
 
 
 def test_css_breakpoint_order(sphinx_doctree: CreateDoctree):
