@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+from docutils import nodes
 from sphinx_pytest.plugin import CreateDoctree
 
 from sphinx_subfigure import __version__
@@ -108,6 +109,12 @@ def test_too_many_images(sphinx_doctree: CreateDoctree):
             ".. |img| image:: image.png\n\n.. subfigure:: AB\n\n   |img| |img|\n",
             "substitution images are not supported",
             id="substitution images",
+        ),
+        pytest.param(
+            ".. |img| image:: image.png\n\n.. subfigure:: AB\n\n"
+            "   |img| |img|\n\n   A caption\n",
+            "substitution images are not supported",
+            id="substitution images with caption",
         ),
     ],
 )
@@ -245,3 +252,35 @@ def test_build_man(file_params, sphinx_doctree: CreateDoctree):
     sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
     result = sphinx_doctree(file_params.content)
     assert not result.warnings
+
+
+@pytest.mark.parametrize(
+    "caption,expected",
+    [
+        pytest.param(
+            "Built for version |version|.", "Built for version 1.2.", id="default"
+        ),
+        pytest.param("The |proj| figure.", "The Foo figure.", id="replace"),
+        pytest.param("Click |img| to zoom.", "Click img to zoom.", id="inline image"),
+    ],
+)
+def test_caption_with_substitution(
+    sphinx_doctree: CreateDoctree, caption: str, expected: str
+):
+    """Test that a caption which *uses* a substitution is still a caption.
+
+    Only a paragraph made up solely of substitution references is rejected (#25).
+    """
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"], "version": "1.2"})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        ".. |img| image:: image.png\n.. |proj| replace:: Foo\n\n"
+        ".. subfigure:: AB\n\n   .. image:: image.png\n   .. image:: image.png\n\n"
+        f"   {caption}\n"
+    )
+    assert not result.warnings
+    captions = [
+        n.astext() for n in result.get_resolved_doctree().findall(nodes.caption)
+    ]
+    assert captions == [expected]

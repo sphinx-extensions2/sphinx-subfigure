@@ -97,9 +97,7 @@ class SubfigureDirective(SphinxDirective):
                     sub["subfigure_area"] = self._area_identifier(number_of_images)
                     number_of_images += 1
                 child.replace_self(images)
-            elif isinstance(child, nodes.paragraph) and any(
-                isinstance(sub, nodes.substitution_reference) for sub in child
-            ):
+            elif self._is_substitution_paragraph(child):
                 raise self.error(
                     "Invalid subfigure content (substitution images are not supported; "
                     "use image directives or MyST images directly)"
@@ -135,6 +133,25 @@ class SubfigureDirective(SphinxDirective):
                 )
 
         return [figure_node]
+
+    @staticmethod
+    def _is_substitution_paragraph(node: nodes.Node) -> bool:
+        """Whether a paragraph holds only substitution references (and whitespace).
+
+        Substitutions are not resolved until after the directive runs,
+        so ``|img| |img|`` would otherwise be misread as the caption.
+        A caption that merely *uses* a substitution (``version |version|``)
+        is not matched.
+        """
+        if not isinstance(node, nodes.paragraph):
+            return False
+        has_reference = False
+        for sub in node.children:
+            if isinstance(sub, nodes.substitution_reference):
+                has_reference = True
+            elif not (isinstance(sub, nodes.Text) and not sub.astext().strip()):
+                return False
+        return has_reference
 
     def _area_identifier(self, index: int) -> str:
         """Return the area identifier (A-Z) for an image index."""
