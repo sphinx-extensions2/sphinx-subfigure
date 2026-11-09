@@ -36,7 +36,7 @@ jobs:
         - os: windows-latest
           python-version: "3.14"
           sphinx: ">=9,<10"
-        # the declared floors: the lowest Sphinx, with the lowest docutils it allows
+        # the declared Sphinx floor, with the lowest docutils it allows
         - os: ubuntu-latest
           python-version: "3.11"
           sphinx: "~=8.0.0"
