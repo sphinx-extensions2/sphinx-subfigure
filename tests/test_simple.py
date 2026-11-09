@@ -115,6 +115,26 @@ def test_invalid_content(sphinx_doctree: CreateDoctree, content: str, message: s
     assert message in result.warnings
 
 
+@pytest.mark.parametrize(
+    "child,line",
+    [
+        # a rubric node carries no line number of its own,
+        # so the directive's line is reported instead
+        pytest.param("   .. rubric:: A rubric\n", 3, id="no child line"),
+        pytest.param("   * a list\n", 7, id="child line"),
+    ],
+)
+def test_invalid_content_line(sphinx_doctree: CreateDoctree, child: str, line: int):
+    """Test that invalid content errors report a line number, never ``line None``."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        f"Text\n\n.. subfigure:: A\n\n   .. image:: image.png\n\n{child}"
+    )
+    assert f"item 2 is neither (line {line})" in result.warnings
+
+
 def test_comments_ignored(sphinx_doctree: CreateDoctree):
     """Test that comments in the directive content are ignored."""
     sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})

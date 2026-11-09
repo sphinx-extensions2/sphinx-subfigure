@@ -106,9 +106,11 @@ class SubfigureDirective(SphinxDirective):
                 child.replace_self(caption)
                 has_caption = True
             else:
+                # some nodes (e.g. a rubric) carry no line number of their own
+                line = child.line or self.lineno
                 raise self.error(
                     "Invalid subfigure content; must contain only images and single caption, "
-                    f"item {idx + 1} is neither (line {child.line})"
+                    f"item {idx + 1} is neither (line {line})"
                 )
 
         if not number_of_images:
