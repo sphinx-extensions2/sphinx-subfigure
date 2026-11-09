@@ -1,5 +1,6 @@
 [build-system]
-requires = ["flit_core >=3.4,<4"]
+# flit_core 4.0.1 writes METADATA with no blank line before the description (fixed in 4.0.2)
+requires = ["flit_core >=3.12,<5,!=4.0.1"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -7,10 +8,10 @@ name = "sphinx_subfigure"
 dynamic = ["version", "description"]
 authors = [{name = "Chris Sewell", email = "chrisj_sewell@hotmail.com"}]
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
     "Development Status :: 4 - Beta",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
@@ -23,7 +24,7 @@ classifiers = [
 ]
 keywords = ["sphinx", "subfigure"]
 requires-python = ">=3.11"
-dependencies = ["sphinx>=8,<10"]
+dependencies = ["sphinx>=8"]
 
 [project.optional-dependencies]
 testing = [
