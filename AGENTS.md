@@ -113,6 +113,8 @@ pytest --regen-file-failure
 Tests can also be run via `tox`, using a python + sphinx factor env
 (e.g. `tox -e py311-sphinx9` — note a bare `tox -e py311` is NOT a
 defined env and would run no tests).
+`tox -e py311-lowest` runs against the declared floors (Sphinx 8.0, docutils 0.20),
+as the lowest CI cell does.
 
 ### Documentation
 
