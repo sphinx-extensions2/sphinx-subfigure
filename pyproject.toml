@@ -24,7 +24,7 @@ classifiers = [
 ]
 keywords = ["sphinx", "subfigure"]
 requires-python = ">=3.11"
-dependencies = ["sphinx>=8,<10"]
+dependencies = ["sphinx>=8"]
 
 [project.optional-dependencies]
 testing = [
