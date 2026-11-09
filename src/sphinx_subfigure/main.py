@@ -41,9 +41,9 @@ class SubfigureDirective(SphinxDirective):
         "layout-xl": directives.unchanged,
         "layout-xxl": directives.unchanged,
         "subcaptions": lambda x: directives.choice(x, ("above", "below")),
-        "width": directives.length_or_percentage_or_unitless,
+        # unitless width and gap values are not valid CSS, so default them to px
+        "width": lambda x: directives.length_or_percentage_or_unitless(x, "px"),
         "align": lambda x: directives.choice(x, ("left", "center", "right")),
-        # unitless gap values are not valid CSS, so default them to px
         "gap": lambda x: directives.length_or_percentage_or_unitless(x, "px"),
         "name": directives.unchanged,
         "class": directives.class_option,

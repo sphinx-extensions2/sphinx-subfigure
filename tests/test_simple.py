@@ -142,6 +142,32 @@ def test_gap_unitless(sphinx_doctree: CreateDoctree):
     assert "gap: 5px;" in html
 
 
+@pytest.mark.parametrize(
+    "width,style",
+    [
+        pytest.param("300", "width: 300px", id="unitless"),
+        pytest.param("50%", "width: 50%", id="percentage"),
+        pytest.param("10em", "width: 10em", id="length"),
+    ],
+)
+def test_width_units(sphinx_doctree: CreateDoctree, width: str, style: str):
+    """Test that unitless width values default to px (unitless is invalid CSS),
+    as for ``gap``, while explicit units are kept."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        f".. subfigure:: AB\n   :width: {width}\n\n"
+        "   .. image:: image.png\n\n"
+        "   .. image:: image.png\n"
+    )
+    assert not result.warnings
+    html = BeautifulSoup(
+        Path(result.builder.outdir).joinpath("index.html").read_text(), "html.parser"
+    )
+    assert html.select_one("figure.sphinx-subfigure")["style"] == style
+
+
 def test_css_breakpoint_order(sphinx_doctree: CreateDoctree):
     """Test that media-query blocks are emitted in ascending breakpoint order,
     regardless of the order in which figures define them (else, with equal
