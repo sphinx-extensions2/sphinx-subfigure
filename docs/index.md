@@ -104,8 +104,8 @@ Options for `subfigure` directive:
 | `layout-lg` | string | Layout for large screens |
 | `layout-xl` | string | Layout for extra large screens |
 | `layout-xxl` | string | Layout for extra extra large screens |
-| `gap` | length | Space between image areas |
-| `width` | length | Width of figure |
+| `gap` | length | Space between image areas (a unitless number is taken as px) |
+| `width` | length | Width of figure (a unitless number is taken as px) |
 | `align` | left\|center\|right | Alignment of figure |
 | `subcaptions` | above\|below | Position of image captions |
 | `name` | string | Label name of the figure |
