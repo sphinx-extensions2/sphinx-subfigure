@@ -1,5 +1,6 @@
 [build-system]
-requires = ["flit_core >=3.12,<5"]
+# flit_core 4.0.1 writes METADATA with no blank line before the description (fixed in 4.0.2)
+requires = ["flit_core >=3.12,<5,!=4.0.1"]
 build-backend = "flit_core.buildapi"
 
 [project]
