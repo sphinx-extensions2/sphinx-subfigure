@@ -60,10 +60,13 @@ Or, for a more complex, responsive layout:
 5. Spaces in the layout are ignored, so they can be used for visual alignment.
 6. Additional layouts can be defined with `:layout-sm:`, `:layout-lg:`, `:layout-xl:`, and `:layout-xxl:`, for different screen sizes (HTML only).
 
-Images must use `image` or `figure` directives, or MyST image syntax.
+Images must use the `image` directive (`{image}` in MyST), or MyST image syntax `![alt](path)`.
 reStructuredText substitution references such as `|img|` cannot be used as subfigure images
-(they are resolved after the directive runs), so a paragraph made up only of them is an error.
-Substitutions inside the caption are fine, as are MyST `{{ }}` substitutions.
+(they are resolved after the directive runs),
+so a paragraph made up only of image substitutions, or of substitutions defined further down the document, is an error.
+A caption may use substitutions alongside other text (for example `Version |version|.`),
+or be made only of text substitutions defined above it (`replace::`) or built into Sphinx (`|version|`, `|release|`, `|today|`).
+MyST `{{ }}` substitutions are fine.
 
 :::{subfigure} AA|BC
 :layout-sm: A|B|C
