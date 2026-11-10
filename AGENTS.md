@@ -205,7 +205,8 @@ Keywords:
 1. **Description**: Include a meaningful description explaining the change
 2. **Tests**: Include fixture/test cases for new functionality or bug fixes
 3. **Documentation**: Update `docs/index.md` (and its options table) if behaviour changes
-4. **Code Quality**: Ensure `pre-commit run --all-files` passes
+4. **Changelog**: leave `CHANGELOG.md` alone; the release PR writes the entry for every merged PR
+5. **Code Quality**: Ensure `pre-commit run --all-files` passes
 
 ## Key Files
 
