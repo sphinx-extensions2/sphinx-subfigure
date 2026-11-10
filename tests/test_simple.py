@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
+from docutils import nodes
 from sphinx_pytest.plugin import CreateDoctree
 
 from sphinx_subfigure import __version__
@@ -104,6 +105,40 @@ def test_too_many_images(sphinx_doctree: CreateDoctree):
             "no images found",
             id="no images",
         ),
+        pytest.param(
+            ".. |img| image:: image.png\n\n.. subfigure:: AB\n\n   |img| |img|\n",
+            "substitution images are not supported",
+            id="substitution images",
+        ),
+        pytest.param(
+            ".. |img| image:: image.png\n\n.. subfigure:: AB\n\n"
+            "   |img| |img|\n\n   A caption\n",
+            "substitution images are not supported",
+            id="substitution images with caption",
+        ),
+        pytest.param(
+            ".. |img| image:: image.png\n.. _img: https://example.com\n\n"
+            ".. subfigure:: AB\n\n   |img|_ |img|_\n",
+            "substitution images are not supported",
+            id="linked substitution images",
+        ),
+        pytest.param(
+            ".. subfigure:: AB\n\n   |img| |img|\n\n.. |img| image:: image.png\n",
+            "substitution images are not supported",
+            id="substitution images defined below",
+        ),
+        pytest.param(
+            ".. |version| image:: image.png\n\n"
+            ".. subfigure:: AB\n\n   |version| |version|\n",
+            "substitution images are not supported",
+            id="default substitution redefined as image",
+        ),
+        pytest.param(
+            ".. |img| image:: image.png\n.. |pic| replace:: |img|\n\n"
+            ".. subfigure:: AB\n\n   |pic| |pic|\n",
+            "substitution images are not supported",
+            id="nested substitution images",
+        ),
     ],
 )
 def test_invalid_content(sphinx_doctree: CreateDoctree, content: str, message: str):
@@ -113,6 +148,26 @@ def test_invalid_content(sphinx_doctree: CreateDoctree, content: str, message: s
     sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
     result = sphinx_doctree(content)
     assert message in result.warnings
+
+
+@pytest.mark.parametrize(
+    "child,line",
+    [
+        # a rubric node carries no line number of its own,
+        # so the directive's line is reported instead
+        pytest.param("   .. rubric:: A rubric\n", 3, id="no child line"),
+        pytest.param("   * a list\n", 7, id="child line"),
+    ],
+)
+def test_invalid_content_line(sphinx_doctree: CreateDoctree, child: str, line: int):
+    """Test that invalid content errors report a line number, never ``line None``."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        f"Text\n\n.. subfigure:: A\n\n   .. image:: image.png\n\n{child}"
+    )
+    assert f"item 2 is neither (line {line})" in result.warnings
 
 
 def test_comments_ignored(sphinx_doctree: CreateDoctree):
@@ -140,6 +195,32 @@ def test_gap_unitless(sphinx_doctree: CreateDoctree):
     assert not result.warnings
     html = Path(result.builder.outdir).joinpath("index.html").read_text()
     assert "gap: 5px;" in html
+
+
+@pytest.mark.parametrize(
+    "width,style",
+    [
+        pytest.param("300", "width: 300px", id="unitless"),
+        pytest.param("50%", "width: 50%", id="percentage"),
+        pytest.param("10em", "width: 10em", id="length"),
+    ],
+)
+def test_width_units(sphinx_doctree: CreateDoctree, width: str, style: str):
+    """Test that unitless width values default to px (unitless is invalid CSS),
+    as for ``gap``, while explicit units are kept."""
+    sphinx_doctree.set_conf({"extensions": ["sphinx_subfigure"]})
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        f".. subfigure:: AB\n   :width: {width}\n\n"
+        "   .. image:: image.png\n\n"
+        "   .. image:: image.png\n"
+    )
+    assert not result.warnings
+    html = BeautifulSoup(
+        Path(result.builder.outdir).joinpath("index.html").read_text(), "html.parser"
+    )
+    assert html.select_one("figure.sphinx-subfigure")["style"] == style
 
 
 def test_css_breakpoint_order(sphinx_doctree: CreateDoctree):
@@ -194,3 +275,45 @@ def test_build_man(file_params, sphinx_doctree: CreateDoctree):
     sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
     result = sphinx_doctree(file_params.content)
     assert not result.warnings
+
+
+@pytest.mark.parametrize(
+    "caption,expected",
+    [
+        pytest.param(
+            "Built for version |version|.", "Built for version 1.2.", id="default"
+        ),
+        pytest.param("The |proj| figure.", "The Foo figure.", id="replace"),
+        pytest.param("Click |img| to zoom.", "Click img to zoom.", id="inline image"),
+        # a caption whose first child is inline markup (not text)
+        pytest.param("|version| build.", "1.2 build.", id="default first"),
+        pytest.param("*Bold* caption.", "Bold caption.", id="emphasis first"),
+        # a caption made only of text substitutions
+        pytest.param("|version|", "1.2", id="default only"),
+        pytest.param("|proj|", "Foo", id="replace only"),
+        pytest.param("|PROJ| |release|", "Foo 1.2.3", id="replace and default only"),
+    ],
+)
+def test_caption_with_substitution(
+    sphinx_doctree: CreateDoctree, caption: str, expected: str
+):
+    """Test that a caption which *uses* a substitution is still a caption.
+
+    Only a paragraph made up solely of substitution references,
+    at least one of which is not known to be text, is rejected (#25).
+    """
+    sphinx_doctree.set_conf(
+        {"extensions": ["sphinx_subfigure"], "version": "1.2", "release": "1.2.3"}
+    )
+    sphinx_doctree.buildername = "html"
+    sphinx_doctree.srcdir.joinpath("image.png").write_bytes(IMAGE_PNG)
+    result = sphinx_doctree(
+        ".. |img| image:: image.png\n.. |proj| replace:: Foo\n\n"
+        ".. subfigure:: AB\n\n   .. image:: image.png\n   .. image:: image.png\n\n"
+        f"   {caption}\n"
+    )
+    assert not result.warnings
+    captions = [
+        n.astext() for n in result.get_resolved_doctree().findall(nodes.caption)
+    ]
+    assert captions == [expected]

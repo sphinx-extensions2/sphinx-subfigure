@@ -60,6 +60,14 @@ Or, for a more complex, responsive layout:
 5. Spaces in the layout are ignored, so they can be used for visual alignment.
 6. Additional layouts can be defined with `:layout-sm:`, `:layout-lg:`, `:layout-xl:`, and `:layout-xxl:`, for different screen sizes (HTML only).
 
+Images must use the `image` directive (`{image}` in MyST), or MyST image syntax `![alt](path)`.
+reStructuredText substitution references such as `|img|` cannot be used as subfigure images
+(they are resolved after the directive runs),
+so a paragraph made up only of image substitutions, or of substitutions defined further down the document, is an error.
+A caption may use substitutions alongside other text (for example `Version |version|.`),
+or be made only of text substitutions defined above it (`replace::`) or built into Sphinx (`|version|`, `|release|`, `|today|`).
+MyST `{{ }}` substitutions are fine.
+
 :::{subfigure} AA|BC
 :layout-sm: A|B|C
 :gap: 8px
@@ -104,8 +112,8 @@ Options for `subfigure` directive:
 | `layout-lg` | string | Layout for large screens |
 | `layout-xl` | string | Layout for extra large screens |
 | `layout-xxl` | string | Layout for extra extra large screens |
-| `gap` | length | Space between image areas |
-| `width` | length | Width of figure |
+| `gap` | length | Space between image areas (a unitless number is taken as px) |
+| `width` | length | Width of figure (a unitless number is taken as px) |
 | `align` | left\|center\|right | Alignment of figure |
 | `subcaptions` | above\|below | Position of image captions |
 | `name` | string | Label name of the figure |

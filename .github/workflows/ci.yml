@@ -36,10 +36,15 @@ jobs:
         - os: windows-latest
           python-version: "3.14"
           sphinx: ">=9,<10"
+        # the declared Sphinx floor, with the lowest docutils it allows
+        - os: ubuntu-latest
+          python-version: "3.11"
+          sphinx: "~=8.0.0"
+          docutils: "~=0.20.0"
 
     runs-on: ${{ matrix.os }}
 
-    name: "pytest: py${{ matrix.python-version }}, sphinx${{ matrix.sphinx }}, on ${{ matrix.os }}"
+    name: "pytest: py${{ matrix.python-version }}, sphinx${{ matrix.sphinx }}${{ matrix.docutils && format(', docutils{0}', matrix.docutils) || '' }}, on ${{ matrix.os }}"
 
     steps:
     - uses: actions/checkout@v6
@@ -51,7 +56,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[testing]" "sphinx${{ matrix.sphinx }}"
+        pip install -e ".[testing]" "sphinx${{ matrix.sphinx }}" ${{ matrix.docutils && format('"docutils{0}"', matrix.docutils) || '' }}
+    - name: Show resolved versions
+      shell: bash
+      run: |
+        python -c "import platform; from importlib.metadata import version; print('python', platform.python_version()); print('sphinx', version('sphinx')); print('docutils', version('docutils')); print('myst-parser', version('myst-parser'))"
     - name: Run pytest
       run: pytest --cov=sphinx_subfigure --cov-report=term-missing
 

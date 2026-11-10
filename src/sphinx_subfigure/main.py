@@ -15,6 +15,11 @@ from . import __version__
 from .tr_html import setup_html
 from .tr_latex import setup_latex
 
+# resolved by Sphinx's ``DefaultSubstitutions`` transform, unless the document defines them
+_SPHINX_DEFAULT_SUBSTITUTIONS = frozenset(
+    {"version", "release", "today", "translation progress"}
+)
+
 
 def setup(app: Sphinx) -> ExtensionMetadata:
     """Setup the extension."""
@@ -41,9 +46,9 @@ class SubfigureDirective(SphinxDirective):
         "layout-xl": directives.unchanged,
         "layout-xxl": directives.unchanged,
         "subcaptions": lambda x: directives.choice(x, ("above", "below")),
-        "width": directives.length_or_percentage_or_unitless,
+        # unitless width and gap values are not valid CSS, so default them to px
+        "width": lambda x: directives.length_or_percentage_or_unitless(x, "px"),
         "align": lambda x: directives.choice(x, ("left", "center", "right")),
-        # unitless gap values are not valid CSS, so default them to px
         "gap": lambda x: directives.length_or_percentage_or_unitless(x, "px"),
         "name": directives.unchanged,
         "class": directives.class_option,
@@ -97,18 +102,28 @@ class SubfigureDirective(SphinxDirective):
                     sub["subfigure_area"] = self._area_identifier(number_of_images)
                     number_of_images += 1
                 child.replace_self(images)
+            elif self._is_substitution_paragraph(child):
+                raise self.error(
+                    "Invalid subfigure content (substitution images are not supported; "
+                    "use image directives or MyST images directly)"
+                )
             elif isinstance(child, nodes.paragraph):
                 if has_caption:
                     raise self.error("Invalid subfigure content (multiple captions)")
-                caption = nodes.caption(child.rawsource, *child.children)
+                # the second positional argument is the caption's text:
+                # pass it empty, so a first child that is inline markup
+                # is kept as a node rather than turned into its XML string
+                caption = nodes.caption(child.rawsource, "", *child.children)
                 caption.source = child.source
                 caption.line = child.line
                 child.replace_self(caption)
                 has_caption = True
             else:
+                # some nodes (e.g. a rubric) carry no line number of their own
+                line = child.line or self.lineno
                 raise self.error(
                     "Invalid subfigure content; must contain only images and single caption, "
-                    f"item {idx + 1} is neither (line {child.line})"
+                    f"item {idx + 1} is neither (line {line})"
                 )
 
         if not number_of_images:
@@ -126,6 +141,56 @@ class SubfigureDirective(SphinxDirective):
                 )
 
         return [figure_node]
+
+    def _is_substitution_paragraph(self, node: nodes.Node) -> bool:
+        """Whether a paragraph is a row of would-be substitution images.
+
+        That is a paragraph holding only substitution references
+        (``|img|``, or linked ``|img|_``) and whitespace,
+        at least one of which is not known to be text.
+        Substitutions are not resolved until after the directive runs,
+        so ``|img| |img|`` would otherwise be misread as the caption.
+        A caption that merely *uses* a substitution (``version |version|``),
+        or is made only of text substitutions (``|version|``), is not matched.
+        """
+        if not isinstance(node, nodes.paragraph):
+            return False
+        refnames: list[str] = []
+        for sub in node.children:
+            if (
+                isinstance(sub, nodes.reference)
+                and len(sub.children) == 1
+                and isinstance(sub[0], nodes.substitution_reference)
+            ):
+                sub = sub[0]
+            if isinstance(sub, nodes.substitution_reference):
+                refnames.append(sub["refname"])
+            elif not (isinstance(sub, nodes.Text) and not sub.astext().strip()):
+                return False
+        return any(not self._is_text_substitution(name) for name in refnames)
+
+    def _is_text_substitution(self, refname: str) -> bool:
+        """Whether a substitution is known, at this point, to resolve to text only.
+
+        That is one defined above (or in ``rst_prolog``) without an image
+        or a nested substitution, or one of Sphinx's default substitutions.
+        One defined further down the document is not known yet.
+        """
+        document = self.state.document
+        # the same lookup as docutils' ``Substitutions`` transform
+        key = (
+            refname
+            if refname in document.substitution_defs
+            else document.substitution_names.get(refname.lower())
+        )
+        definition = document.substitution_defs.get(key) if key else None
+        if definition is not None:
+            return not any(
+                definition.findall(
+                    lambda n: isinstance(n, (nodes.image, nodes.substitution_reference))
+                )
+            )
+        return refname in _SPHINX_DEFAULT_SUBSTITUTIONS
 
     def _area_identifier(self, index: int) -> str:
         """Return the area identifier (A-Z) for an image index."""
